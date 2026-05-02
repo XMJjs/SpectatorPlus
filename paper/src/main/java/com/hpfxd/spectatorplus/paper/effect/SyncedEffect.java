@@ -21,6 +21,6 @@ public record SyncedEffect(String effectKey, int amplifier, int duration) {
     }
 
     public PotionEffectType getType() {
-        return PotionEffectType.getByKey(NamespacedKey.fromString(effectKey));
+        return org.bukkit.Registry.POTION_EFFECT_TYPE.get(NamespacedKey.fromString(effectKey));
     }
 }

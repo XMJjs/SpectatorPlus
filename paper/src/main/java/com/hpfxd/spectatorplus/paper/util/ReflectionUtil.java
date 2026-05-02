@@ -170,6 +170,7 @@ public class ReflectionUtil {
      * <p>
      * This method can be replaced if Bukkit adds a way to do this.
      */
+    @SuppressWarnings("removal")
     public static Object2IntMap<InventoryView.Property> getContainerProperties(InventoryView view) throws ReflectiveOperationException {
         final Object containerMenu = getContainerMenu(view);
         final List<?> dataSlots = getDataSlots(containerMenu);
