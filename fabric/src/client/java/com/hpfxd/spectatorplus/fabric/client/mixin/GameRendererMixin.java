@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.Pose;
 import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -75,12 +76,13 @@ public abstract class GameRendererMixin {
     // }
 
     @Inject(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;", remap = false))
-    public void spectatorplus$renderItemInHand(CameraRenderState cameraState, float partialTicks, Matrix4fc projectionMatrix,
+    public void spectatorplus$renderItemInHand(CameraRenderState cameraState, float partialTicks,
+            Matrix4fc projectionMatrix,
             CallbackInfo ci, @Local PoseStack poseStackIn) {
         if (SpectatorClientMod.config.renderArms && this.minecraft.player != null
                 && this.minecraft.options.getCameraType().isFirstPerson() && !this.minecraft.options.hideGui) {
             final AbstractClientPlayer spectated = SpecUtil.getCameraPlayer(this.minecraft);
-            if (spectated != null && !spectated.isSpectator()) {
+            if (spectated != null && !spectated.isSpectator() && !cameraState.entityRenderState.isSleeping) {
                 // this.lightTexture.turnOnLightLayer();
 
                 float attackAnim = spectated.getAttackAnim(partialTicks);
