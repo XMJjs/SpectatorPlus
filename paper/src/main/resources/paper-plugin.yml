@@ -2,7 +2,7 @@ name: SpectatorPlus
 version: "$version"
 description: "$description"
 website: "https://github.com/hpfxd/SpectatorPlus"
-api-version: "26.1"
+api-version: "26.2"
 main: "com.hpfxd.spectatorplus.paper.SpectatorPlugin"
 load: STARTUP
 authors:
