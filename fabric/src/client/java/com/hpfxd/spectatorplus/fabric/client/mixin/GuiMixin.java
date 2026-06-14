@@ -12,7 +12,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -43,7 +43,7 @@ import org.spongepowered.asm.mixin.injection.modify.LocalVariableDiscriminator.C
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.Holder;
 
-@Mixin(Gui.class)
+@Mixin(Hud.class)
 public abstract class GuiMixin {
     // Local copy of vanilla overlay resource location
     @Shadow
@@ -54,13 +54,10 @@ public abstract class GuiMixin {
     public abstract SpectatorGui getSpectatorGui();
 
     @Shadow
-    protected abstract void extractItemHotbar(GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker);
-
-
+    public abstract boolean isHidden();
 
     @Shadow
-    @Final
-    private SpectatorGui spectatorGui;
+    private void extractItemHotbar(GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker) {}
 
     // Use correct Identifiers for vanilla empty armor slot icons from the GUI atlas
     private static final Identifier EMPTY_ARMOR_SLOT_HELMET = Identifier.withDefaultNamespace("container/slot/helmet");
@@ -125,7 +122,7 @@ public abstract class GuiMixin {
     @Inject(method = "extractHotbarAndDecorations(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/spectator/SpectatorGui;extractHotbar(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V"))
     private void spectatorplus$renderHotbar(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci,
             @Share("spectated") LocalRef<AbstractClientPlayer> spectatedRef) {
-        if (!this.getSpectatorGui().isMenuActive() && !this.minecraft.options.hideGui) {
+        if (!this.getSpectatorGui().isMenuActive() && !this.isHidden()) {
             final AbstractClientPlayer spectated = SpecUtil.getCameraPlayer(this.minecraft);
             spectatedRef.set(spectated);
 
@@ -341,8 +338,8 @@ public abstract class GuiMixin {
         return constant;
     }
 
-    @WrapWithCondition(method = "extractPlayerHealth(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;extractFood(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/world/entity/player/Player;II)V"))
-    private boolean spectatorplus$hideNonSyncedFood(Gui instance, GuiGraphicsExtractor guiGraphics, Player player, int y,
+    @WrapWithCondition(method = "extractPlayerHealth(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;extractFood(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/world/entity/player/Player;II)V"))
+    private boolean spectatorplus$hideNonSyncedFood(Hud instance, GuiGraphicsExtractor guiGraphics, Player player, int y,
             int x) {
         return (ClientSyncController.syncData != null && ClientSyncController.syncData.foodData != null)
                 || SpecUtil.getCameraPlayer(this.minecraft) == null;

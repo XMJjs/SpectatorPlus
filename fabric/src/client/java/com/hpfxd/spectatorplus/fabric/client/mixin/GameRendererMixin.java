@@ -40,6 +40,9 @@ public abstract class GameRendererMixin {
     @Shadow
     @Final
     public ItemInHandRenderer itemInHandRenderer;
+    @Shadow
+    @Final
+    private SubmitNodeStorage handAndScreenSubmitNodeStorage;
 
     @Unique
     private float bob;
@@ -80,7 +83,7 @@ public abstract class GameRendererMixin {
             Matrix4fc projectionMatrix,
             CallbackInfo ci, @Local PoseStack poseStackIn) {
         if (SpectatorClientMod.config.renderArms && this.minecraft.player != null
-                && this.minecraft.options.getCameraType().isFirstPerson() && !this.minecraft.options.hideGui) {
+                && this.minecraft.options.getCameraType().isFirstPerson() && !this.minecraft.gui.hud.isHidden()) {
             final AbstractClientPlayer spectated = SpecUtil.getCameraPlayer(this.minecraft);
             if (spectated != null && !spectated.isSpectator() && !cameraState.entityRenderState.isSleeping) {
                 // this.lightTexture.turnOnLightLayer();
@@ -102,7 +105,7 @@ public abstract class GameRendererMixin {
                         partialTicks);
 
                 final ItemInHandRendererAccessor accessor = ((ItemInHandRendererAccessor) this.itemInHandRenderer);
-                var submitNodeCollector = minecraft.gameRenderer.getSubmitNodeStorage();
+                var submitNodeCollector = this.handAndScreenSubmitNodeStorage;
 
                 if (handRenderSelection.renderMainHand) {
                     final float swingProgress = interactionHand == InteractionHand.MAIN_HAND ? attackAnim : 0.0F;
@@ -129,8 +132,7 @@ public abstract class GameRendererMixin {
                 }
 
                 // this.lightTexture.turnOffLightLayer();
-                this.minecraft.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
-                this.renderBuffers.bufferSource().endBatch();
+                this.minecraft.gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeCollector);
             }
         }
     }

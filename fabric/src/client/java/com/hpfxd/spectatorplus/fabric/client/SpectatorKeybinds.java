@@ -87,7 +87,7 @@ public class SpectatorKeybinds {
 
         if (target != null && !target.getProfile().id().equals(mc.getCameraEntity().getUUID())) {
             setTarget(mc, target.getProfile().id());
-            mc.player.sendOverlayMessage(Component.translatable("spectatorplus.target.now-spectating", Component.empty().append(mc.gui.getTabList().getNameForDisplay(target))
+            mc.player.sendOverlayMessage(Component.translatable("spectatorplus.target.now-spectating", Component.empty().append(mc.gui.hud.getTabList().getNameForDisplay(target))
                     .withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
         } else {
             mc.player.sendOverlayMessage(Component.translatable("spectatorplus.target.no-player").withStyle(ChatFormatting.RED));
@@ -127,7 +127,7 @@ public class SpectatorKeybinds {
             mc.getConnection().send(new ServerboundTeleportToEntityPacket(uuid));
         }
 
-        if (SpectatorClientMod.config.keybindsOpenMenu || mc.gui.getSpectatorGui().isMenuActive()) {
+        if (SpectatorClientMod.config.keybindsOpenMenu || mc.gui.hud.getSpectatorGui().isMenuActive()) {
             selectInMenu(mc, uuid);
         }
     }
@@ -140,7 +140,7 @@ public class SpectatorKeybinds {
             return;
         }
 
-        final SpectatorGui gui = mc.gui.getSpectatorGui();
+        final SpectatorGui gui = mc.gui.hud.getSpectatorGui();
         if (!gui.isMenuActive()) {
             // Activate the menu
             // gui.onMouseMiddleClick();

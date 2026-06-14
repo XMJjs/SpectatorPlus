@@ -3,7 +3,7 @@ package com.hpfxd.spectatorplus.fabric.client.mixin;
 import com.hpfxd.spectatorplus.fabric.client.sync.ClientSyncController;
 import com.hpfxd.spectatorplus.fabric.client.util.SpecUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.contextualbar.ExperienceBarRenderer;
+import net.minecraft.client.gui.contextualbar.ExperienceBar;
 import net.minecraft.client.player.LocalPlayer;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(ExperienceBarRenderer.class)
+@Mixin(ExperienceBar.class)
 public class ExperienceBarRendererMixin {
     @Shadow @Final private Minecraft minecraft;
 

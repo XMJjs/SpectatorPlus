@@ -106,9 +106,9 @@ public class ScreenSyncController {
     public static <S extends Screen & MenuAccess<?>> void handleNewSyncedScreen(Minecraft mc, S screen) {
         isPendingOpen = false;
         mc.player.containerMenu = screen.getMenu();
-        mc.setScreen(screen);
+        mc.gui.setScreen(screen);
 
-        if (mc.screen != screen) {
+        if (mc.gui.screen() != screen) {
             syncedInventory = null;
             syncData.screen = null;
             return;
