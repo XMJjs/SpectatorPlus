@@ -23,6 +23,7 @@
     "PlayerMenuItemAccessor",
     "PlayerMenuItemMixin",
     "ScreenEffectRendererMixin",
+    "ScreenManagerMixin",
     "SpectatorGuiAccessor",
     "SpectatorMenuAccessor",
     "screen.AbstractContainerMenuMixin",

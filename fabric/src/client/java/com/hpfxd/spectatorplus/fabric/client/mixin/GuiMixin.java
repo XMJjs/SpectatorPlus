@@ -42,6 +42,10 @@ import org.spongepowered.asm.mixin.injection.modify.LocalVariableDiscriminator.C
 
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.Holder;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import com.hpfxd.spectatorplus.fabric.sync.packet.ServerboundOpenedInventorySyncPacket;
+import com.hpfxd.spectatorplus.fabric.sync.packet.ServerboundRequestInventoryOpenPacket;
+import net.minecraft.client.gui.screens.Screen;
 
 @Mixin(Hud.class)
 public abstract class GuiMixin {
@@ -411,5 +415,6 @@ public abstract class GuiMixin {
         // The effectKey should be lowercase, matching the registry name
         return Identifier.withDefaultNamespace("mob_effect/" + key.toLowerCase());
     }
+
 
 }

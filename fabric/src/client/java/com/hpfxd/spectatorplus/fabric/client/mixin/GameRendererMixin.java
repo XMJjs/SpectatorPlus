@@ -78,21 +78,28 @@ public abstract class GameRendererMixin {
     // }
     // }
 
-    @Inject(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;", remap = false))
-    public void spectatorplus$renderItemInHand(CameraRenderState cameraState, float partialTicks,
-            Matrix4fc projectionMatrix,
-            CallbackInfo ci, @Local PoseStack poseStackIn) {
-        if (SpectatorClientMod.config.renderArms && this.minecraft.player != null
-                && this.minecraft.options.getCameraType().isFirstPerson() && !this.minecraft.gui.hud.isHidden()) {
+    @ModifyExpressionValue(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;getPlayerMode()Lnet/minecraft/world/level/GameType;"))
+    private GameType spectatorplus$spoofPlayerMode(GameType original) {
+        if (original == GameType.SPECTATOR && SpectatorClientMod.config.renderArms) {
             final AbstractClientPlayer spectated = SpecUtil.getCameraPlayer(this.minecraft);
-            if (spectated != null && !spectated.isSpectator() && !cameraState.entityRenderState.isSleeping) {
-                // this.lightTexture.turnOnLightLayer();
+            if (spectated != null && !spectated.isSpectator()) {
+                return GameType.SURVIVAL;
+            }
+        }
+        return original;
+    }
 
+    @org.spongepowered.asm.mixin.injection.Redirect(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;submitHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/player/LocalPlayer;I)V"))
+    private void spectatorplus$renderCustomArms(ItemInHandRenderer instance, float partialTicks, PoseStack poseStackIn, SubmitNodeCollector submitNodeCollector, net.minecraft.client.player.LocalPlayer localPlayer, int packedLightCoords) {
+        if (this.minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR && SpectatorClientMod.config.renderArms) {
+            final AbstractClientPlayer spectated = SpecUtil.getCameraPlayer(this.minecraft);
+            if (spectated != null && !spectated.isSpectator()) {
                 float attackAnim = spectated.getAttackAnim(partialTicks);
                 final InteractionHand interactionHand = MoreObjects.firstNonNull(spectated.swingingArm,
                         InteractionHand.MAIN_HAND);
                 float pitch = Mth.lerp(partialTicks, spectated.xRotO, spectated.getXRot());
 
+                poseStackIn.pushPose();
                 poseStackIn.mulPose(Axis.XP.rotationDegrees(
                         (spectated.getViewXRot(partialTicks) - Mth.lerp(partialTicks, this.xBobO, this.xBob)) * 0.1F));
                 poseStackIn.mulPose(
@@ -101,11 +108,7 @@ public abstract class GameRendererMixin {
 
                 final ItemInHandRenderer.HandRenderSelection handRenderSelection = evaluateWhichHandsToRender(
                         spectated);
-                final int packedLightCoords = this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(spectated,
-                        partialTicks);
-
-                final ItemInHandRendererAccessor accessor = ((ItemInHandRendererAccessor) this.itemInHandRenderer);
-                var submitNodeCollector = this.handAndScreenSubmitNodeStorage;
+                final ItemInHandRendererAccessor accessor = ((ItemInHandRendererAccessor) instance);
 
                 if (handRenderSelection.renderMainHand) {
                     final float swingProgress = interactionHand == InteractionHand.MAIN_HAND ? attackAnim : 0.0F;
@@ -131,10 +134,12 @@ public abstract class GameRendererMixin {
                             poseStackIn, submitNodeCollector, packedLightCoords);
                 }
 
-                // this.lightTexture.turnOffLightLayer();
-                this.minecraft.gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeCollector);
+                poseStackIn.popPose();
+                return;
             }
         }
+        
+        instance.submitHandsWithItems(partialTicks, poseStackIn, submitNodeCollector, localPlayer, packedLightCoords);
     }
 
     @Unique

@@ -34,4 +34,16 @@ public class ClientLevelMixin {
         }
         return ItemStack.EMPTY;
     }
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "destroyBlockProgress(ILnet/minecraft/core/BlockPos;I)V", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;remove(I)Ljava/lang/Object;", remap = false))
+    private void spectatorplus$resetAttackCooldownOnDigFinish(int breakerId, net.minecraft.core.BlockPos pos, int progress, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if (progress == -1) {
+            final net.minecraft.client.player.AbstractClientPlayer spectated = com.hpfxd.spectatorplus.fabric.client.util.SpecUtil.getCameraPlayer(Minecraft.getInstance());
+            if (spectated != null && spectated.getId() == breakerId) {
+                if (((ClientLevelAccessor) this).getDestroyingBlocks().containsKey(breakerId)) {
+                    spectated.resetAttackStrengthTicker();
+                }
+            }
+        }
+    }
 }

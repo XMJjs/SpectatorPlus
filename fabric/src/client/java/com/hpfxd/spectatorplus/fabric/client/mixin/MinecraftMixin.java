@@ -39,33 +39,5 @@ public abstract class MinecraftMixin {
         return original;
     }
 
-    /**
-     * If the server has indicated the ability to accept the {@link ServerboundRequestInventoryOpenPacket}, we want to
-     * send it instead of opening the client's inventory when pressing the inventory keybind and let the server handle
-     * opening the inventory for us.
-     */
-    @WrapWithCondition(
-            method = "handleKeybinds()V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V", ordinal = 1)
-    )
-    private boolean spectatorplus$requestSpectatorInventoryOpen(Minecraft instance, Screen guiScreen) {
-        // are we currently spectating a player?
-        final AbstractClientPlayer spectated = SpecUtil.getCameraPlayer((Minecraft) (Object) this);
-        if (spectated != null) {
-            if (ClientPlayNetworking.canSend(ServerboundRequestInventoryOpenPacket.TYPE)) {
-                // server has registered the ability to accept the packet, we want to cancel the original setScreen call
-                // and send the packet to the server. if the server has not registered this packet, the mod will not
-                // interfere with this key's normal operation.
 
-                ClientPlayNetworking.send(new ServerboundRequestInventoryOpenPacket(spectated.getUUID()));
-                return false;
-            }
-        }
-
-        if (ClientPlayNetworking.canSend(ServerboundOpenedInventorySyncPacket.TYPE)) {
-            // just let the server we've opened our inventory. this is used to sync with other users spectating this client
-            ClientPlayNetworking.send(new ServerboundOpenedInventorySyncPacket());
-        }
-        return true;
-    }
 }

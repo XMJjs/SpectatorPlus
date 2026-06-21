@@ -10,4 +10,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface ClientLevelAccessor {
     @Invoker
     LevelEntityGetter<Entity> invokeGetEntities();
+
+    @org.spongepowered.asm.mixin.gen.Accessor
+    it.unimi.dsi.fastutil.ints.Int2ObjectMap<net.minecraft.server.level.BlockDestructionProgress> getDestroyingBlocks();
 }

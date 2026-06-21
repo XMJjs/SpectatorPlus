@@ -42,7 +42,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Unique
     private boolean isBreakingBlock() {
-        return ((LevelRendererAccessor) Minecraft.getInstance().levelRenderer).getDestroyingBlocks()
+        return ((ClientLevelAccessor) Minecraft.getInstance().level).getDestroyingBlocks()
                 .containsKey(this.getId());
     }
 

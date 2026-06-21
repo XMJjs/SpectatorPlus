@@ -18,19 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
-    @Shadow @Final private Minecraft minecraft;
 
-    @Inject(method = "destroyBlockProgress(ILnet/minecraft/core/BlockPos;I)V", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;remove(I)Ljava/lang/Object;", remap = false))
-    private void spectatorplus$resetAttackCooldownOnDigFinish(int breakerId, BlockPos pos, int progress, CallbackInfo ci) {
-        if (progress == -1) {
-            final AbstractClientPlayer spectated = SpecUtil.getCameraPlayer(Minecraft.getInstance());
-            if (spectated != null && spectated.getId() == breakerId) {
-                if (((LevelRendererAccessor) this).getDestroyingBlocks().containsKey(breakerId)) {
-                    spectated.resetAttackStrengthTicker();
-                }
-            }
-        }
-    }
+
 
     // @Inject(
     //         method = "renderEntity(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;)V",

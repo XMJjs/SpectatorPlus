@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(ItemInHandRenderer.class)
 public interface ItemInHandRendererAccessor {
-    @Invoker("renderArmWithItem")
+    @Invoker("submitArmWithItem")
     void invokeRenderArmWithItem(AbstractClientPlayer player, float partialTick, float pitch, InteractionHand hand,
                                   float swingProgress, ItemStack item, float equippedProgress, PoseStack poseStack,
                                   SubmitNodeCollector nodeCollector, int packedLight);
