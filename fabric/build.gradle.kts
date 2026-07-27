@@ -74,5 +74,11 @@ tasks {
         from("../LICENSE")
     }
 
-
+    register<Copy>("install") {
+        group = "build"
+        description = "Builds and installs the Fabric mod JAR to relative path ../hoobs/client/mods"
+        dependsOn("jar")
+        from(named<Jar>("jar").flatMap { it.archiveFile })
+        into(rootProject.file("../hoobs/client/mods"))
+    }
 }
