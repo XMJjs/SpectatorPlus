@@ -30,11 +30,13 @@ public class ScreenManagerMixin {
             cancellable = true
     )
     private void spectatorplus$requestSpectatorInventoryOpen(Screen guiScreen, CallbackInfo ci) {
-        if (guiScreen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen) {
+        if (guiScreen != null && guiScreen.getClass() == net.minecraft.client.gui.screens.inventory.InventoryScreen.class) {
             // are we currently spectating a player?
             final AbstractClientPlayer spectated = SpecUtil.getCameraPlayer(this.minecraft);
+            
             if (spectated != null) {
-                if (ClientPlayNetworking.canSend(ServerboundRequestInventoryOpenPacket.TYPE)) {
+                boolean canSend = ClientPlayNetworking.canSend(ServerboundRequestInventoryOpenPacket.TYPE);
+                if (canSend) {
                     // server has registered the ability to accept the packet, we want to cancel the original setScreen call
                     // and send the packet to the server. if the server has not registered this packet, the mod will not
                     // interfere with this key's normal operation.
@@ -44,7 +46,8 @@ public class ScreenManagerMixin {
                 }
             }
 
-            if (ClientPlayNetworking.canSend(ServerboundOpenedInventorySyncPacket.TYPE)) {
+            boolean canSendOpened = ClientPlayNetworking.canSend(ServerboundOpenedInventorySyncPacket.TYPE);
+            if (canSendOpened) {
                 // just let the server we've opened our inventory. this is used to sync with other users spectating this client
                 ClientPlayNetworking.send(new ServerboundOpenedInventorySyncPacket());
             }
