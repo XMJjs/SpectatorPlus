@@ -3,9 +3,10 @@ name: Build
 
 on:
   push:
-    branches: ['**']
+    branches: ['**']          # 保留自动触发（可选）
   pull_request:
-    branches: ['**']
+    branches: ['**']          # 保留自动触发（可选）
+  workflow_dispatch:          # 允许手动触发
 
 jobs:
   build-fabric:
