@@ -1,35 +1,55 @@
-name: Build
-
+name: Build and Release
 
 on:
   push:
-    branches: ['**']          # 保留自动触发（可选）
-  pull_request:
-    branches: ['**']          # 保留自动触发（可选）
-  workflow_dispatch:          # 允许手动触发
+    branches: [ main ]
+  workflow_dispatch:
+
+# ── 依赖版本（MC 26.1.2）────────────────────────────
+# 项目 gradle.properties 未定义这些属性，必须通过 -P 传入，
+# 否则 Gradle 配置阶段会直接报错。如遇版本冲突请调整此处。
+env:
+  MC_VERSION: '26.1.2'
+  PAPER_VERSION: '26.1.2-R0.1-SNAPSHOT'
+  LOADER_VERSION: '0.18.0'          # fabric.mod.json 要求 >=0.18.0
+  FABRIC_API_VERSION: '0.130.0+26.1.2'
+  REFLECTION_REMAPPER_VERSION: '1.1.1'
+  CLOTH_CONFIG_VERSION: '18.0.0'
+  MODMENU_VERSION: '18.0.0'
+  MIXINEXTRAS_VERSION: '0.4.1'
+  FABRIC_PERMISSIONS_API_VERSION: '0.3.1'
 
 jobs:
-  build-fabric:
-    name: Build Fabric
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 25
+      - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
-          java-version: '25'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 25
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build Fabric
-        run: ./gradlew spectatorplus-fabric:build
+      - name: Build Fabric + Paper
+        run: |
+          # 修复 Windows CRLF 换行符导致的 "required file not found"
+          sed -i 's/\r$//' gradlew
+          chmod +x gradlew
+          ./gradlew spectatorplus-fabric:build spectatorplus-paper:build \
+            -Ppaper_version="${{ env.PAPER_VERSION }}" \
+            -Pminecraft_version="${{ env.MC_VERSION }}" \
+            -Ploader_version="${{ env.LOADER_VERSION }}" \
+            -Pfabric_version="${{ env.FABRIC_API_VERSION }}" \
+            -Preflection_remapper_version="${{ env.REFLECTION_REMAPPER_VERSION }}" \
+            -Pcloth_config_version="${{ env.CLOTH_CONFIG_VERSION }}" \
+            -Pmodmenu_version="${{ env.MODMENU_VERSION }}" \
+            -Pmixinextras_version="${{ env.MIXINEXTRAS_VERSION }}" \
+            -Pfabric_permissions_api_version="${{ env.FABRIC_PERMISSIONS_API_VERSION }}" \
+            -Pbuild.type=RELEASE
 
       - name: Upload Fabric artifact
         uses: actions/upload-artifact@v4
@@ -37,30 +57,31 @@ jobs:
           name: spectatorplus-fabric
           path: fabric/build/libs/*.jar
 
-  build-paper:
-    name: Build Paper
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 25
-        uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build Paper
-        run: ./gradlew spectatorplus-paper:build
-
       - name: Upload Paper artifact
         uses: actions/upload-artifact@v4
         with:
           name: spectatorplus-paper
           path: paper/build/libs/*.jar
+
+      - name: Determine release tag
+        id: get_tag
+        run: |
+          if [ -f UPSTREAM_TAG ]; then
+            TAG=$(cat UPSTREAM_TAG)
+            echo "Using upstream tag: ${TAG}"
+          else
+            TAG="v${{ github.run_number }}"
+            echo "No upstream tag found, using run number: ${TAG}"
+          fi
+          echo "release_tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: "Release ${{ steps.get_tag.outputs.release_tag }}"
+          tag_name: "${{ steps.get_tag.outputs.release_tag }}"
+          files: |
+            fabric/build/libs/*.jar
+            paper/build/libs/*.jar
