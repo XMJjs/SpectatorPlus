@@ -40,6 +40,6 @@ public record ClientboundSelectedSlotSyncPacket(
 
     @Override
     public boolean canSend(ServerPlayer receiver) {
-        return Permissions.check(receiver.getUUID(), PERMISSION, true);
+        return Permissions.check(receiver.getUUID(), PERMISSION, true).join();
     }
 }
