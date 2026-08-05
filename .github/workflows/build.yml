@@ -17,7 +17,7 @@ env:
   CLOTH_CONFIG_VERSION: '26.1.154'       # 已从 maven.shedaniel.me 确认存在
   MODMENU_VERSION: '18.0.0'
   MIXINEXTRAS_VERSION: '0.4.1'
-  FABRIC_PERMISSIONS_API_VERSION: '0.3.1'
+  FABRIC_PERMISSIONS_API_VERSION: '0.7.0'      # 0.3.1 引用旧混淆类名，需升级（Maven Central 确认）
 
 jobs:
   build:
